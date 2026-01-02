@@ -1,4 +1,4 @@
-name: Simple OWASP ZAP Scan (Logs Only)
+name: Simple OWASP ZAP Scan
 
 on:
   workflow_dispatch:
@@ -18,5 +18,3 @@ jobs:
         uses: zaproxy/action-baseline@v0.10.0
         with:
           target: "http://testphp.vulnweb.com/login.php"
-          allow_issue_writing: false
-          cmd_options: ""     # prevents zap.yaml copy / permission issue
