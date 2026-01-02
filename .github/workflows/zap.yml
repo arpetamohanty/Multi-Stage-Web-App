@@ -1,29 +1,47 @@
-name: Simple OWASP ZAP Scan
+name: OWASP ZAP Scan (Store Reports in Repo)
 
 on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # required to commit reports to repo
 
 jobs:
   zap:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
 
       - name: Run ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
         with:
           target: "http://testphp.vulnweb.com/login.php"
           allow_issue_writing: false
+          cmd_options: ""   # prevents zap.yaml copy issue
 
-      - name: Upload ZAP Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-scan
-          path: |
-            *.html
-            *.xml
-            *.json
+      - name: Create reports folder
+        run: mkdir -p zap-reports
+
+      - name: Move generated reports (if any)
+        run: |
+          shopt -s nullglob
+          for f in *.html *.xml *.json; do
+            mv "$f" zap-reports/
+          done
+
+      - name: Commit & push reports
+        run: |
+          if [ -n "$(git status --porcelain zap-reports)" ]; then
+            git config user.name "github-actions"
+            git config user.email "actions@github.com"
+            git add zap-reports
+            git commit -m "chore: update ZAP scan reports"
+            git push
+          else
+            echo "No new reports to commit"
+          fi
