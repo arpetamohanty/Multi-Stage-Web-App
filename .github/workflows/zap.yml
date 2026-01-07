@@ -3,8 +3,8 @@ name: Simple OWASP ZAP Scan (Logs Only)
 on:
   workflow_dispatch:
 
-# permissions:
-#   contents: read
+permissions:
+   contents: read
 
 jobs:
   zap:
